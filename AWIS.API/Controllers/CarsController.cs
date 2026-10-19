@@ -1,12 +1,30 @@
+using AWIS.Domain;
+using AWIS.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AWIS.API.Controllers;
 
-public class CarsController : Controller
+public class CarsController : BaseApiController
 {
-    // GET
-    public IActionResult Index()
+    private readonly DataContext _context;
+
+    public CarsController(DataContext context)
     {
-        return View();
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<Car>>> GetCars()
+    {
+        return await _context.Cars.AsNoTracking().ToListAsync();
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Car>> GetCar(Guid id)
+    {
+        var car = await _context.Cars.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        if (car is null) return NotFound();
+        return car;
     }
 }

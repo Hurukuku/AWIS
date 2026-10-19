@@ -19,7 +19,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin(); // zmienic potem na origin front
     });
 });
+
 var app = builder.Build();
+
 app.UseCors("CorsPolicy");
 
 if (app.Environment.IsDevelopment())
@@ -27,7 +29,24 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<DataContext>();
+        await context.Database.MigrateAsync();
+        await Seed.SeedData(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database migration or seeding.");
+    }
+}
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

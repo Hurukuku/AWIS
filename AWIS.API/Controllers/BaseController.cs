@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
 namespace AWIS.API.Controllers;
-
-public class BaseController : Controller
+[ApiController]
+[Route("api/[controller]")]
+public class BaseApiController : Controller
 {
-    // GET
-    public IActionResult Index()
-    {
-        return View();
-    }
 }

@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using AWIS.Infrastructure;
+using MediatR;
+using FluentValidation;
+using AWIS.Application.Cars;
+using AWIS.Application.Common.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +23,16 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin(); // zmienic potem na origin front
     });
 });
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(GetCarsList.Handler).Assembly);
+});
 
+// builder.Services.AddValidatorsFromAssemblyContaining<Create.CommandValidator>();
+
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(ValidationBehavior<,>));
 var app = builder.Build();
 
 app.UseCors("CorsPolicy");

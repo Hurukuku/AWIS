@@ -1,30 +1,35 @@
+using AWIS.Application.Cars;
 using AWIS.Domain;
-using AWIS.Infrastructure;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AWIS.API.Controllers;
 
 public class CarsController : BaseApiController
 {
-    private readonly DataContext _context;
+    private readonly ISender _sender;
 
-    public CarsController(DataContext context)
+    public CarsController(ISender sender)
     {
-        _context = context;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<Car>>> GetCars()
     {
-        return await _context.Cars.AsNoTracking().ToListAsync();
+        return await _sender.Send(new GetCarsList.Query());
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Car>> GetCar(Guid id)
     {
-        var car = await _context.Cars.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        if (car is null) return NotFound();
+        var car = await _sender.Send(new Details.Query { Id = id });
+
+        if (car is null)
+        {
+            return NotFound();
+        }
+
         return car;
     }
 }

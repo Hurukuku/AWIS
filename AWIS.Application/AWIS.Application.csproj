@@ -8,6 +8,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AWIS.Domain\AWIS.Domain.csproj" />
+      <ProjectReference Include="..\AWIS.Infrastructure\AWIS.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
+      <PackageReference Include="MediatR" Version="14.2.0" />
     </ItemGroup>
 
 </Project>

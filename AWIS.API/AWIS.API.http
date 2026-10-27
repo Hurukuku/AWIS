@@ -1,6 +1,60 @@
-@AWIS.API_HostAddress = http://localhost:5180
+@baseUrl = http://localhost:5180
 
-GET {{AWIS.API_HostAddress}}/weatherforecast/
+### GET All Cars
+GET {{baseUrl}}/api/cars
 Accept: application/json
 
-###
+### GET Car By Id (replace ID with an existing car GUID)
+GET {{baseUrl}}/api/cars/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### POST Create Car (Valid)
+POST {{baseUrl}}/api/cars
+Content-Type: application/json
+
+{
+  "brand": "Toyota",
+  "model": "Corolla",
+  "doorsNumber": 5,
+  "luggageCapacity": 470,
+  "engineCapacity": 1800,
+  "fuelType": 1,
+  "productionDate": "2022-05-10T00:00:00Z",
+  "averageFuelConsumption": 6.4,
+  "bodyType": 1
+}
+
+### PUT Update Car (replace ID with an existing car GUID)
+PUT {{baseUrl}}/api/cars/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "brand": "Toyota",
+  "model": "Corolla Hybrid",
+  "doorsNumber": 5,
+  "luggageCapacity": 470,
+  "engineCapacity": 1800,
+  "fuelType": 1,
+  "productionDate": "2023-04-15T00:00:00Z",
+  "averageFuelConsumption": 4.8,
+  "bodyType": 1
+}
+
+### DELETE Car (replace ID with an existing car GUID)
+DELETE {{baseUrl}}/api/cars/00000000-0000-0000-0000-000000000000
+
+### POST Create Car - Validation Error
+POST {{baseUrl}}/api/cars
+Content-Type: application/json
+
+{
+  "brand": "",
+  "model": "",
+  "doorsNumber": 1,
+  "luggageCapacity": -10,
+  "engineCapacity": 0,
+  "fuelType": 1,
+  "productionDate": "2035-01-01T00:00:00Z",
+  "averageFuelConsumption": -4.5,
+  "bodyType": 1
+}

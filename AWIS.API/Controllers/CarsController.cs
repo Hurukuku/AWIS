@@ -32,4 +32,45 @@ public class CarsController : BaseApiController
 
         return car;
     }
+
+    [HttpPost]
+    public async Task<ActionResult<Car>> CreateCar(Car car)
+    {
+        var result = await _sender.Send(new Create.Command { Car = car });
+
+        return CreatedAtAction(
+            nameof(GetCar),
+            new { id = result.Id },
+            result);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateCar(Guid id, Car car)
+    {
+        var result = await _sender.Send(new Edit.Command
+        {
+            Id = id,
+            Car = car
+        });
+
+        if (!result)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteCar(Guid id)
+    {
+        var result = await _sender.Send(new Delete.Command { Id = id });
+
+        if (!result)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }

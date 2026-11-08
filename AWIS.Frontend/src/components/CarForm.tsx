@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router";
 import { bodyType, fuelType, type NewCar } from "../models/Car";
+import { formatDateForInput } from "../utils/dateUtils";
 
 interface CarFormProps {
   initialValues?: NewCar;
@@ -27,7 +28,10 @@ export default function CarForm({
   submitButtonText = "Zapisz",
   cancelPath = "/cars",
 }: CarFormProps) {
-  const [formData, setFormData] = useState<NewCar>(initialValues);
+  const [formData, setFormData] = useState<NewCar>(() => ({
+    ...initialValues,
+    productionDate: formatDateForInput(initialValues.productionDate),
+  })); 1
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

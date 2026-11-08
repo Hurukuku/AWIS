@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router";
+import axios from "axios";
 import { getCarById, deleteCar } from "../services/carService";
 import { bodyType, fuelType, type Car } from "../models/Car";
 import NotFoundPage from "./NotFoundPage";
 import Loading from "../components/Loading";
+import { formatDateForDisplay } from "../utils/dateUtils";
+import { useCarUiStore } from "../store/useCarUiStore";
+import starIcon from "../assets/Star.svg";
+import starEmptyIcon from "../assets/StarEmpty.svg";
 
 export default function CarDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,31 +18,43 @@ export default function CarDetailsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const favoriteCarIds = useCarUiStore((state) => state.favoriteCarIds);
+  const toggleFavorite = useCarUiStore((state) => state.toggleFavorite);
+  const removeFavorite = useCarUiStore((state) => state.removeFavorite);
+
   useEffect(() => {
     if (!id) return;
-    let ignore = false;
-    setLoading(true);
 
-    getCarById(id)
-      .then((data) => {
-        if (!ignore) {
-          setCar(data);
-          setError(null);
+    const controller = new AbortController();
+
+    async function loadCar() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const loadedCar = await getCarById(id!, controller.signal);
+        setCar(loadedCar);
+      } catch (caughtError) {
+        if (axios.isCancel(caughtError)) {
+          return;
         }
-      })
-      .catch((err) => {
-        if (!ignore) {
-          setError(err.message || "Błąd pobierania danych");
+
+        if (caughtError instanceof Error) {
+          setError(caughtError.message);
+        } else {
+          setError("Wystąpił nieznany błąd.");
         }
-      })
-      .finally(() => {
-        if (!ignore) {
+      } finally {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
-      });
+      }
+    }
+
+    loadCar();
 
     return () => {
-      ignore = true;
+      controller.abort();
     };
   }, [id]);
 
@@ -48,6 +65,7 @@ export default function CarDetailsPage() {
 
     try {
       await deleteCar(id);
+      removeFavorite(id);
       navigate("/cars");
     } catch (err: any) {
       alert("Błąd podczas usuwania: " + (err.message || "Nieznany błąd"));
@@ -66,13 +84,30 @@ export default function CarDetailsPage() {
     return <NotFoundPage />;
   }
 
+  const isFavorite = favoriteCarIds.includes(car.id);
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center px-6 py-8">
       <div className="flex flex-col border border-gray-500 rounded-md w-full max-w-2xl p-6 bg-neutral-800">
         <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
-          <h1 className="text-2xl font-bold">
-            {car.brand} {car.model}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">
+              {car.brand} {car.model}
+            </h1>
+            <button
+              type="button"
+              onClick={() => toggleFavorite(car.id)}
+              className="p-1 hover:scale-110 transition cursor-pointer"
+              title={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+              aria-label={isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+            >
+              <img
+                src={isFavorite ? starIcon : starEmptyIcon}
+                alt={isFavorite ? "Ulubiony" : "Ulubione"}
+                className="w-6 h-6 invert"
+              />
+            </button>
+          </div>
           <span className="text-xs text-gray-400 bg-neutral-900 border border-gray-700 px-3 py-1 rounded">
             ID: {car.id}
           </span>
@@ -80,7 +115,8 @@ export default function CarDetailsPage() {
 
         <div className="flex flex-col gap-2 text-sm text-gray-300 mb-6">
           <p>
-            <strong className="text-white">Data produkcji:</strong> {car.productionDate}
+            <strong className="text-white">Data produkcji:</strong>{" "}
+            {formatDateForDisplay(car.productionDate)}
           </p>
           <p>
             <strong className="text-white">Typ nadwozia:</strong>{" "}

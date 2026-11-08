@@ -19,7 +19,7 @@ export default function Navbar() {
       const data = await getCars();
       setAllCars(data);
     } catch {
-      // Ignore network errors in navbar preview
+   
     } finally {
       setLoadingCars(false);
     }
@@ -73,7 +73,6 @@ export default function Navbar() {
             + Dodaj samochód
           </NavLink>
 
-          {/* Ulubione with icon, count badge, and hover preview */}
           <div
             className="relative"
             onMouseEnter={() => {
@@ -112,7 +111,6 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Hover popup with simple list of cars: marka model (rok) + star to remove */}
             {isHovered && (
               <div className="absolute right-0 top-full pt-1 w-64 z-50">
                 <div className="bg-neutral-900 border border-gray-700 rounded-md shadow-xl p-2 text-sm">
